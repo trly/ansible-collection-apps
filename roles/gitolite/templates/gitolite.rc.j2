@@ -1,0 +1,104 @@
+# configuration variables for gitolite
+
+# This file is in perl syntax.  But you do NOT need to know perl to edit it --
+# just mind the commas, use single quotes unless you know what you're doing,
+# and make sure the brackets and braces stay matched up!
+
+# (Tip: perl allows a comma after the last item in a list also!)
+
+# HELP for commands can be had by running the command with "-h".
+
+# HELP for all the other FEATURES can be found in the documentation (look for
+# "list of non-core programs shipped with gitolite" in the master index) or
+# directly in the corresponding source file.
+
+%RC = (
+
+    # ------------------------------------------------------------------
+
+    # default umask gives you perms of '0700'; see the rc file docs for
+    # how/why you might change this
+    UMASK                           =>  {{ gitolite__rc['umask'] | default('0077') }},
+
+    # look for "git-config" in the documentation
+    GIT_CONFIG_KEYS                 => '{{ gitolite__rc['git_config_keys'] | default([]) | join(' ') }}',
+
+    # comment out if you don't need all the extra detail in the logfile
+    LOG_EXTRA                       =>  1,
+    # logging options
+    # 1. leave this section as is for 'normal' gitolite logging (default)
+    # 2. uncomment this line to log ONLY to syslog:
+    # LOG_DEST                      => 'syslog',
+    # 3. uncomment this line to log to syslog and the normal gitolite log:
+    # LOG_DEST                      => 'syslog,normal',
+    # 4. prefixing "repo-log," to any of the above will **also** log just the
+    #    update records to "gl-log" in the bare repo directory:
+    # LOG_DEST                      => 'repo-log,normal',
+    # LOG_DEST                      => 'repo-log,syslog',
+    # LOG_DEST                      => 'repo-log,syslog,normal',
+    # syslog 'facility': defaults to 'local0', uncomment if needed.  For example:
+    # LOG_FACILITY                  => 'local4',
+
+    # roles.  add more roles (like MANAGER, TESTER, ...) here.
+    #   WARNING: if you make changes to this hash, you MUST run 'gitolite
+    #   compile' afterward, and possibly also 'gitolite trigger POST_COMPILE'
+    ROLES => {
+        READERS                     =>  1,
+        WRITERS                     =>  1,
+    },
+
+    # enable caching (currently only Redis).  PLEASE RTFM BEFORE USING!!!
+    # CACHE                         =>  'Redis',
+
+    # ------------------------------------------------------------------
+
+    # rc variables used by various features
+
+    # the 'info' command prints this as additional info, if it is set
+        # SITE_INFO                 =>  'Please see http://blahblah/gitolite for more help',
+
+    # the CpuTime feature uses these
+        # display user, system, and elapsed times to user after each git operation
+        # DISPLAY_CPU_TIME          =>  1,
+        # display a warning if total CPU times (u, s, cu, cs) crosses this limit
+        # CPU_TIME_WARN_LIMIT       =>  0.1,
+
+    # the Mirroring feature needs this
+        # HOSTNAME                  =>  "foo",
+
+    # TTL for redis cache; PLEASE SEE DOCUMENTATION BEFORE UNCOMMENTING!
+        # CACHE_TTL                 =>  600,
+
+    # ------------------------------------------------------------------
+
+    # suggested locations for site-local gitolite code (see cust.html)
+
+        # this one is managed directly on the server
+        # LOCAL_CODE                =>  "$ENV{HOME}/local",
+
+        # or you can use this, which lets you put everything in a subdirectory
+        # called "local" in your gitolite-admin repo.  For a SECURITY WARNING
+        # on this, see http://gitolite.com/gitolite/non-core.html#using-the-gitolite-admin-repo-to-manage-non-core-code
+        # LOCAL_CODE                =>  "$rc{GL_ADMIN_BASE}/local",
+
+    # ------------------------------------------------------------------
+
+    # List of commands and features to enable
+
+    ENABLE => [
+      {% if gitolite__rc['enable'] is defined %}
+      {%- for item in gitolite__rc['enable'] %}
+        '{{ item }}',
+      {% endfor %}
+      {%- endif %}
+    ],
+);
+
+# ------------------------------------------------------------------------------
+# per perl rules, this should be the last line in such a file:
+1;
+
+# Local variables:
+# mode: perl
+# End:
+# vim: set syn=perl:

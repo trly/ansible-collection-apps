@@ -1,0 +1,73 @@
+---
+- name: create gitolite user
+  ansible.builtin.user:
+    name: "{{ gitolite__user }}"
+    state: present
+    home: "{{ gitolite__user_home }}"
+    create_home: true
+
+- become_user: "{{ gitolite__user }}"
+  ansible.builtin.file:
+    path: "{{ gitolite__user_home }}/bin"
+    state: directory
+
+- name: clone gitolite repository
+  become_user: "{{ gitolite__user }}"
+  ansible.builtin.git:
+    repo: "{{ gitolite__repository }}"
+    dest: "{{ gitolite__install_dir }}"
+    version: "{{ gitolite__version }}"
+
+- name: install gitolite
+  become_user: "{{ gitolite__user }}"
+  ansible.builtin.command: "{{ gitolite__install_dir }}/install -ln {{ gitolite__user_home }}/bin"
+  args:
+    creates: "{{ gitolite__install_dir }}/src/VERSION"
+
+- name: check for gitolite-admin repository
+  ansible.builtin.stat:
+    path: "{{ gitolite__user_home }}/repositories/gitolite-admin.git"
+  register: admin_repository
+
+- name: copy gitolite admin public key
+  become_user: "{{ gitolite__user }}"
+  ansible.builtin.copy:
+    content: "{{ gitolite__admin_key }}"
+    dest: "{{ gitolite__user_home }}/{{ gitolite__admin_user }}.pub"
+  when: not admin_repository.stat.exists
+
+- name: configure git default branch for gitolite setup
+  become_user: "{{ gitolite__user }}"
+  community.general.git_config:
+    name: init.defaultBranch
+    scope: global
+    value: master
+  when: not admin_repository.stat.exists
+
+- name: setup gitolite admin
+  become_user: "{{ gitolite__user }}"
+  ansible.builtin.command: "bin/gitolite setup -pk {{ gitolite__admin_user }}.pub"
+  args:
+    chdir: "{{ gitolite__user_home }}"
+  when: not admin_repository.stat.exists
+  register: gitolite_setup
+
+- name: clean up gitolite admin public key
+  become_user: "{{ gitolite__user }}"
+  ansible.builtin.file:
+    path: "{{ gitolite__user_home }}/{{ gitolite__admin_user }}.pub"
+    state: absent
+  when: admin_repository.stat.exists or gitolite_setup.changed
+
+- name: configure git default branch
+  become_user: "{{ gitolite__user }}"
+  community.general.git_config:
+    name: init.defaultBranch
+    scope: global
+    value: main
+
+- name: configure gitolite
+  become_user: "{{ gitolite__user }}"
+  ansible.builtin.template:
+    src: gitolite.rc.j2
+    dest: "{{ gitolite__user_home }}/.gitolite.rc"
