@@ -1,0 +1,4 @@
+---
+gitolite__pkg_install:
+- git
+- perl

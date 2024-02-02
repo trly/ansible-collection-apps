@@ -1,0 +1,5 @@
+dependencies: 
+- role: trly.sysconfig.pkg
+  vars:
+    pkg__install: "{{ gitolite__pkg_install }}"
+

@@ -1,0 +1,20 @@
+---
+gitolite__user: git
+gitolite__user_home: /var/lib/gitolite
+gitolite__repository: https://github.com/sitaramc/gitolite.git
+gitolite__version: v3.6.12
+gitolite__install_dir: "{{ gitolite__user_home }}/{{ gitolite__version }}"
+gitolite__admin_key: null
+gitolite__admin_user: null
+gitolite__defaultBranch: main
+gitolite__rc: 
+  enable:
+    - help
+    - desc
+    - info
+    - perms
+    - writable
+    - ssh-authkeys
+    - git-config
+    - daemon
+    - gitweb
