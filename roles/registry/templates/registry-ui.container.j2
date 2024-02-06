@@ -1,0 +1,18 @@
+[Unit]
+Description=Docker Registry User Interface
+
+[Container]
+Image=docker.io/joxit/docker-registry-ui:{{ registry__ui_version }}
+{% for key, value in registry__ui_env.items() %}
+Environment={{ key }}={{ value }}
+{% endfor %}
+{% for port in registry__ui_ports %}
+PublishPort={{ port }}
+{% endfor %}
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+
+[Install]
+WantedBy=multi-user.target default.target

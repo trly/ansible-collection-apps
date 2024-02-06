@@ -1,0 +1,11 @@
+---
+- name: restart registry
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+    name: registry.service
+    state: restarted
+- name: restart registry ui
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+    name: registry-ui.service
+    state: restarted

@@ -1,0 +1,17 @@
+- name: check required variables
+  fail:
+    msg: "required variable '{{ item }}' is not defined"
+  when: item not in vars
+  loop: "{{ registry__required_vars }}"
+
+- include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      files:
+        - '{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml'
+        - '{{ ansible_distribution }}.yml'
+        - '{{ ansible_os_family }}-{{ ansible_distribution_major_version }}.yml'
+        - '{{ ansible_os_family }}.yml'
+      paths:
+        - 'vars'
+

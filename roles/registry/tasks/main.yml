@@ -1,0 +1,24 @@
+---
+# - include_tasks: variables.yml
+
+- name: deploy registry volume
+  ansible.builtin.template:
+    src: registry.volume.j2
+    dest: "/etc/containers/systemd/registry.volume"
+  register: registry_volume
+
+- name: deploy registry
+  ansible.builtin.template:
+    src: registry.container.j2
+    dest: "/etc/containers/systemd/registry.container"
+  notify:
+    - restart registry
+  
+- name: deploy registry ui
+  ansible.builtin.template:
+    src: registry-ui.container.j2
+    dest: "/etc/containers/systemd/registry-ui.container"
+  notify:
+    - restart registry ui
+  when:
+    - registry__ui_enabled

@@ -1,0 +1,22 @@
+[Unit]
+Description=Distribution registry
+
+[Container]
+Image=docker.io/library/registry:{{ registry__version }}
+Volume=registry.volume:/var/lib/registry
+{% for volume in registry__volumes %}
+Volume={{ volume }}
+{% endfor %}
+{% for key, value in registry__env.items() %}
+Environment={{ key }}={{ value }}
+{% endfor %}
+{% for port in registry__ports %}
+PublishPort={{ port }}
+{% endfor %}
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+
+[Install]
+WantedBy=multi-user.target default.target
